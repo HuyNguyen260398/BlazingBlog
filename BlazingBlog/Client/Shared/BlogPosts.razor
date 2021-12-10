@@ -1,0 +1,25 @@
+﻿@inject IBlogService BlogService
+
+@foreach(var post in posts)
+{
+    <div class="card my-4">
+        <div class="card-img" style="background-image: url('@(post.Image ?? placeholderImage)')"></div>
+        <div class="card-body">
+            <h5 class="card-title">@post.Title</h5>
+            <p class="card-text">@post.Description</p>
+            <p class="card-text"><small class="text-muted">@post.DateCreated.ToLongDateString()</small></p>
+            <a class="btn btn-primary" href="/posts/@post.Url">Read more...</a>
+        </div>
+    </div>
+}
+
+@code {
+    private List<BlogPost> posts = new();
+
+    private string placeholderImage = "https://via.placeholder.com/1060x180";
+
+    protected override async Task OnInitializedAsync()
+    {
+        posts = await BlogService.GetAllBlogPosts();
+    }
+}

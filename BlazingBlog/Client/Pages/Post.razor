@@ -1,0 +1,27 @@
+﻿@page "/posts/{url}"
+@inject IBlogService BlogService
+
+@if (post != null)
+{   
+    <img src="@post.Image" />
+
+    <h3>@post.Title</h3>
+
+    <p>@((MarkupString)Markdown.ToHtml(post.Content))</p>
+}
+else
+{
+    <span>Getting post from server!</span>
+}
+
+@code {
+    [Parameter]
+    public string Url { get; set; }
+
+    private BlogPost post;
+
+    protected override async Task OnInitializedAsync()
+    {
+        post = await BlogService.GetBlogPostByUrl(Url);
+    }
+}

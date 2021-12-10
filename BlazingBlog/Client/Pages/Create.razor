@@ -1,0 +1,69 @@
+﻿@page "/create"
+
+@inject IBlogService BlogService
+@inject NavigationManager NavManager
+
+<h3>Create new blog post</h3>
+<EditForm Model="newPost" OnValidSubmit="CreateNewBlogPost">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <div class="form-group">
+        <label for="title">Title</label>
+        <InputText id="title" @bind-Value="newPost.Title" class="form-control" />
+        <ValidationMessage For="@(() => newPost.Title)" />
+    </div>
+    <div class="form-group">
+        <label for="url">Url</label>
+        <InputText id="url" @bind-Value="newPost.Url" class="form-control" />
+        <ValidationMessage For="@(() => newPost.Url)" />
+    </div>
+    <div class="form-control-file">
+        <label for="img">Image</label>
+        <InputFile OnChange="OnFileChange" />
+    </div>
+    <div class="form-group">
+        <label for="desc">Description</label>
+        <InputText id="desc" @bind-Value="newPost.Description" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label for="content">Content</label>
+        <InputTextArea id="content" @bind-Value="newPost.Content" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label for="contentpreview">Content Preview</label>
+        <div id="contentpreview" style="height: 100%" class="form-control">@((MarkupString)Markdown.ToHtml(newPost.Content))</div>
+    </div>
+    <div class="form-group">
+        <label for="author">Author</label>
+        <InputText id="author" @bind-Value="newPost.Author" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label for="date">Date</label>
+        <InputDate id="date" @bind-Value="newPost.DateCreated" class="form-control" />
+    </div>
+    <div class="form-group">
+        <InputCheckbox id="publish" @bind-Value="newPost.IsPublished" class="form-check-input" />
+        <label for="publish">Publish</label>
+    </div>
+    <button type="submit" class="btn btn-success">Save</button>
+</EditForm>
+
+@code {
+    BlogPost newPost = new();
+
+    private async Task CreateNewBlogPost()
+    {
+        var result = await BlogService.CreateBlogPost(newPost);
+        NavManager.NavigateTo("/");
+    }
+
+    private async Task OnFileChange(InputFileChangeEventArgs args)
+    {
+        var format = "image/png";
+        var resizedImage = await args.File.RequestImageFileAsync(format, 300, 300);
+        var buffer = new byte[resizedImage.Size];
+        await resizedImage.OpenReadStream().ReadAsync(buffer);
+        var imageData = $"data:{format};base64,{Convert.ToBase64String(buffer)}";
+        newPost.Image = imageData;
+    }
+}
